@@ -16,10 +16,12 @@ table(ingeschreven_wo_2015$PROVINCIE)
 table(ingeschreven_wo_2015$`SOORT INSTELLING`) #silly two part names with spaces...
 # because spss can't work with spaces in names, we have to replace them:
 names(ingeschreven_wo_2015) <- gsub(" ", ".", names(ingeschreven_wo_2015))
+names(ingeschreven_wo_2015) <- gsub("20", "j20", names(ingeschreven_wo_2015)) # this solved a problem I
+# encountered later on. variables starting with a number are hard to refer to
 # change OPLEIDINGSVORM and OPLEIDINGSFASE.ACTUEEL  to factor to show some things
 ingeschreven_wo_2015$OPLEIDINGSVORM<-as.factor(ingeschreven_wo_2015$OPLEIDINGSVORM)
 ingeschreven_wo_2015$OPLEIDINGSFASE.ACTUEEL<-as.factor(ingeschreven_wo_2015$OPLEIDINGSFASE.ACTUEEL)
 # then write away
 haven::write_sav(ingeschreven_wo_2015, "ingeschrevenwo2015.sav") # or use library(haven); write_sav(..) etc.
-rm(ingeschreven_wo_2015) #cleaning up the workspace or use rm(list= ls()) to remove everything
+rm(ingeschreven_wo_2015, link) #cleaning up the workspace or use rm(list= ls()) to remove everything
 
