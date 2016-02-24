@@ -11,6 +11,7 @@
 #  https://github.com/RMHogervorst/cleancodeexamples/blob/master/scripts/opening-spss-file-manipulate-with-dplyr-2016-feb.R
 #  
 # necesary packages:  ####
+install.packages("tidyr")
 library(readr)
 library(tidyr)
 library(dplyr)
@@ -19,7 +20,7 @@ ingeschreven_wo_2015<-read_csv2(link, trim_ws = T) #uses the ; notation therefor
 # 
 # INTRODUCTION ####
 # To make analyses work we often need to change the way files look.
-# Sometimes information is recorded in a way that is very efficient but not 
+# Sometimes information is recorded in a way that is very efficient but not
 # workable for your analyses. In other words, the data is messy and we need to
 # make it tidy.
 # 
@@ -70,7 +71,7 @@ duo2015<-ingeschreven_wo_2015[-(2416:2417),]
 tail(duo2015)  # see? the same
 # tidy data examples as found in the tidyr package ####
 # 
-# Check teh description in the vignette
+# Check the description in the vignette
 vignette("tidy-data")
 # Or the demos
 demo(package = "tidyr") # look at example dadmon:
@@ -85,7 +86,7 @@ demo(package = "tidyr", topic = "dadmom")  # press enter
 # This is equivalent to Restructure in SPSS?
 duo2015 %>% gather(year, frequency, c(13:22)) %>% View
 # if you look at this temporary file you see that it contains 24150 cases
-# But and only 14 columns. 
+# But and only 14 columns.
 # Unfortunately the 13th column contains both year and gender. Let's fix this.
 # 
 # Separating a column that contains multiple values ####
@@ -122,9 +123,9 @@ names(duo2015_tidy)<-gsub(" ", "-", names(duo2015_tidy))
 # The command names()  returns the variablenames,
 # the command gsub uses pattern recognition and replacement. ?gsub
 # The first argument is what to recognize, (" ") meaning whitespace
-# the second argument is the replacement. I chose a bar ("-"), but nothing ("") or 
+# the second argument is the replacement. I chose a bar ("-"), but nothing ("") or
 # a dot (".") would work equaly well.
-# The third argument is the vector to apply this principle on, the names of the variables 
+# The third argument is the vector to apply this principle on, the names of the variables
 # in this case. Finally we assign the endresult of that command to names(duo2015).
 # So in one line we replaced the spaces in the names of the variables.
 # 
