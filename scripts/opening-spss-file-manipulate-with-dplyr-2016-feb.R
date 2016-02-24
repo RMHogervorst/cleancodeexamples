@@ -191,7 +191,12 @@ wo2015 %>% filter(j2011.VROUW <= 10) %>% # so less or equal to 10 women in 2011
         filter(j2015.VROUW > 10)  %>% # more then 10 in 2015. 
         group_by(PROVINCIE) %>% summarize(number_of_programs = n())
 #
-#THATS IT FOR TODAY, GOOD LUCK!
+# In this lesson you have learned to open .sav files with haven,
+# how to change labelled values from the Haven package,
+# worked with most of the dplyr commands.
+# 
+#
+# THATS IT FOR TODAY, GOOD LUCK!
 
 
 ##############################################
