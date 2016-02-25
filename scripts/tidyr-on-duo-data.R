@@ -119,7 +119,7 @@ write_csv(duo2015_tidy, "files/duo2015_tidy.csv") # you can also chain this comm
 # However there is some problem with the names, some contain spaces, and that is 
 # just annoying. Lets replace the names with a bar in place of the space.
 # First the command then the explanation
-names(duo2015_tidy)<-gsub(" ", "-", names(duo2015_tidy))
+names(duo2015_tidy)<-gsub(" ", ".", names(duo2015_tidy))
 # The command names()  returns the variablenames,
 # the command gsub uses pattern recognition and replacement. ?gsub
 # The first argument is what to recognize, (" ") meaning whitespace
