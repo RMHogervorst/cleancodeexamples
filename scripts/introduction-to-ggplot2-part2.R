@@ -2,6 +2,7 @@
 # Introduction to GGPLOT2 part 2
 # for the series: from spss to r
 # 2016-02-24 RMHogervorst
+# modified: 2016-03-03, 2016-04-02
 # 
 # file used origin: # file information: https://www.duo.nl/open_onderwijsdata/databestanden/ho/Ingeschreven/wo_ingeschr/Ingeschrevenen_wo1.jsp
 # transformed it to tidy data with: https://github.com/RMHogervorst/cleancodeexamples/blob/master/scripts/tidyr-on-duo-data.R
@@ -13,7 +14,7 @@ link<-"https://raw.githubusercontent.com/RMHogervorst/cleancodeexamples/master/f
 # Libraries to use
 library(dplyr) # yes I use it almost daily
 library(ggplot2)
-library(readr)
+library(readr) # for the use of read_csv (there is also a read.csv function in base r)
 # load the data
 duo2015_tidy<- read_csv(link)
 # This is the same file we used in: https://rmhogervorst.github.io/cleancode/blog/2016/02/24/creating-tidy-data.html
@@ -103,10 +104,157 @@ hugeprograms<-duo2015_tidy %>% filter(YEAR == 2015 &
                                 OPLEIDINGSVORM == "voltijd onderwijs" &
                                 OPLEIDINGSFASE.ACTUEEL == "propedeuse bachelor") %>%
         group_by(OPLEIDINGSNAAM.ACTUEEL) %>% summarise(combinedMF = sum(FREQUENCY)) %>%
-        filter(combinedMF > 900)
+        filter(combinedMF > 2000)
+# creer subset van data met alleen voltijd en hoge programma's.
 h<-duo2015_tidy %>% filter(OPLEIDINGSNAAM.ACTUEEL %in% hugeprograms$OPLEIDINGSNAAM.ACTUEEL) %>%
         filter(OPLEIDINGSVORM == "voltijd onderwijs" & OPLEIDINGSFASE.ACTUEEL == "propedeuse bachelor")
-h%>% #filter(GENDER == "VROUW") %>%
-        ggplot(aes(YEAR , FREQUENCY) ) + geom_line(aes(group = OPLEIDINGSNAAM.ACTUEEL)) +
-        facet(  GENDER)
-# per uni leiden
+# gebruik subset om frequencies te zien. 
+h%>% filter(GEMEENTENAAM == "LEIDEN") %>%
+        ggplot(aes(YEAR , FREQUENCY) ) + 
+        geom_line(aes(group = OPLEIDINGSNAAM.ACTUEEL,color = OPLEIDINGSNAAM.ACTUEEL)) +
+        facet_grid( . ~ GENDER)
+# dan kijken naar mannen vs vrouwen in 1 plot
+# met 1 opleiding in meerdere steden. 
+h %>% filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie") %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER)) + facet_grid(. ~ GEMEENTENAAM)
+## lelijk
+h %>% filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie") %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER)) + facet_grid( GEMEENTENAAM ~.)
+# dan combineren
+h %>% filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie" |OPLEIDINGSNAAM.ACTUEEL == "B Rechtsgeleerdheid" ) %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER)) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL)
+## keer kleuren om
+## h %>% filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie" |OPLEIDINGSNAAM.ACTUEEL == "B Rechtsgeleerdheid" ) %>%
+ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER == "MAN")) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL)
+# maar maakt de legenda weer lelijk
+# optie ander is eigen kleuren schema maken
+# zie ook :http://www.cookbook-r.com/Graphs/Colors_%28ggplot2%29/
+# let's use stereotype colours.
+duo2015_tidy %>% filter(OPLEIDINGSVORM == "voltijd onderwijs" & OPLEIDINGSFASE.ACTUEEL == "propedeuse bachelor") %>%
+        filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie" |OPLEIDINGSNAAM.ACTUEEL == "B Rechtsgeleerdheid" ) %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER)) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL)
+
+duo2015_tidy %>% filter(OPLEIDINGSVORM == "voltijd onderwijs" & OPLEIDINGSFASE.ACTUEEL == "propedeuse bachelor") %>%
+        filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie" ) %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER), size = 1) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL) +
+        scale_colour_manual(values=c( "lightblue", "pink")) 
+
+duo2015_tidy %>% filter(OPLEIDINGSVORM == "voltijd onderwijs" & OPLEIDINGSFASE.ACTUEEL == "propedeuse bachelor") %>%
+        filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie" ) %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER), size = 1) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL) +
+        scale_colour_manual(values=c( "#3399ff", "#ff00ff"))
+duo2015_tidy %>% filter(OPLEIDINGSVORM == "voltijd onderwijs" & OPLEIDINGSFASE.ACTUEEL == "propedeuse bachelor") %>%
+        filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie" ) %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER), size = 1) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL) +
+        scale_color_brewer( palette = "Accent")
+
+# let's stop copying so much
+plot_basis<- h %>% filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie" |OPLEIDINGSNAAM.ACTUEEL == "B Rechtsgeleerdheid" ) %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER)) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL)
+plot_basis + scale_colour_manual(values=c( "blue", "red"))
+plot_basis + scale_colour_manual(values=c( "#3399ff", "#ff00ff")) # much brighter, very ugly
+plot<-plot_basis + scale_colour_manual(values=c( "#3399ff", "#ff00ff")) # add it together
+# let's remove axes and set a title
+plot <-plot + theme(axis.title.x = element_blank(),  # changing multiple theme settings
+                axis.title.y = element_blank(),  # on a temporary basis, only for this plot
+                legend.position = "bottom",
+                strip.text.y=element_text(angle = 0, vjust = 0.5) # make readable
+             ) +
+        ggtitle("Number of first year students in 2 mayor programs \n over five years")
+plot
+
+duo2015_tidy %>% filter(OPLEIDINGSVORM == "voltijd onderwijs" & OPLEIDINGSFASE.ACTUEEL == "propedeuse bachelor") %>%
+        filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie" ) %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER), size = 1) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL) +
+        scale_color_brewer( palette = "Accent")+
+        ggtitle("Psychology students in several cities over five years") +
+        theme_minimal() +
+        theme(axis.title.x = element_blank(),  # changing multiple theme settings
+              axis.title.y = element_blank(),  # on a temporary basis, only for this plot
+              legend.position = "bottom",
+              strip.text.y=element_text(angle = 0, vjust = 0.5) # make readable
+        )
+
+
+duo2015_tidy %>% filter(OPLEIDINGSVORM == "voltijd onderwijs" & OPLEIDINGSFASE.ACTUEEL == "propedeuse bachelor") %>%
+        filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie" ) %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER), size = 1) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL) +
+        scale_color_brewer( palette = "Accent")+
+        ggtitle("Psychology students in several cities over five years") +
+        studytheme
+
+studytheme <- theme_minimal() + 
+        theme(axis.title.x = element_blank(),  # changing multiple theme settings
+              axis.title.y = element_blank(),  # on a temporary basis, only for this plot
+              legend.position = "bottom",
+              strip.text.y=element_text(angle = 0, vjust = 0.5) # make readable
+        )
+duo2015_tidy %>% filter(OPLEIDINGSVORM == "voltijd onderwijs" & OPLEIDINGSFASE.ACTUEEL == "propedeuse bachelor") %>%
+        filter(OPLEIDINGSNAAM.ACTUEEL == "B Psychologie" ) %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER), size = 1) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL) +
+        scale_color_brewer( palette = "Accent")+
+        ggtitle("Psychology students in several cities over five years") +
+        studytheme
+
+tduo2015_tidy %>% filter(OPLEIDINGSVORM == "voltijd onderwijs" & OPLEIDINGSFASE.ACTUEEL == "propedeuse bachelor") %>%
+        filter(OPLEIDINGSNAAM.ACTUEEL == "B Rechtsgeleerdheid" ) %>%
+        ggplot(aes(YEAR, FREQUENCY, group = GENDER)) +
+        geom_line(aes(colour = GENDER), size = 1) + facet_grid( GEMEENTENAAM ~ OPLEIDINGSNAAM.ACTUEEL) +
+        scale_color_brewer( palette = "Accent")+
+        ggtitle("Law students in several cities over five years") +
+        studytheme
+
+library(ggthemes)
+plot + theme_fivethirtyeight()  # better, but the theme overrides the previous settings.
+plot + theme_fivethirtyeight() + theme(axis.title.x = element_blank(),  # changing multiple theme settings
+                                       axis.title.y = element_blank(),  # on a temporary basis, only for this plot
+                                       legend.position = "bottom",
+                                       strip.text.y=element_text(angle = 0, vjust = 0.5) # make readable
+)
+plot + theme_tufte() + theme(axis.title.x = element_blank(),  # changing multiple theme settings
+                             axis.title.y = element_blank(),  # on a temporary basis, only for this plot
+                             legend.position = "bottom",
+                             strip.text.y=element_text(angle = 0, vjust = 0.5) # make readable
+)
+# count the number of programs per university in 2015
+duo2015_tidy %>% filter(YEAR == 2015, 
+                        OPLEIDINGSFASE.ACTUEEL == "bachelor", 
+                        OPLEIDINGSVORM == "voltijd onderwijs") %>% 
+        group_by(INSTELLINGSNAAM.ACTUEEL) %>% 
+        summarize(Number_programs = n())
+# check if correct 
+duo2015_tidy %>% filter(YEAR == 2015, 
+                        OPLEIDINGSFASE.ACTUEEL == "bachelor", 
+                        OPLEIDINGSVORM == "voltijd onderwijs",
+                        INSTELLINGSNAAM.ACTUEEL == "Erasmus Universiteit Rotterdam"
+                        ) %>% View
+# Aah ! the genders are separate
+duo2015_tidy %>% filter(YEAR == 2015, 
+                        OPLEIDINGSFASE.ACTUEEL == "bachelor", 
+                        OPLEIDINGSVORM == "voltijd onderwijs"
+                        ) %>% 
+        group_by(INSTELLINGSNAAM.ACTUEEL, OPLEIDINGSNAAM.ACTUEEL) %>%
+        filter(INSTELLINGSNAAM.ACTUEEL == "Erasmus Universiteit Rotterdam") %>% 
+        summarise( aantal = sum(FREQUENCY ))  %>% View
+# I think this is better then selecting geslacht == male
+# because that might select out the programs with only females.
+# 
+# 
+# display the number of programs per university over years, in South Holland
+duo2015_tidy %>% filter(OPLEIDINGSFASE.ACTUEEL == "bachelor", 
+                        OPLEIDINGSVORM == "voltijd onderwijs"
+                        ) %>% 
+        group_by(INSTELLINGSNAAM.ACTUEEL, YEAR) %>% 
+        summarise( aantal = n())
