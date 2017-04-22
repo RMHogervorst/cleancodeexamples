@@ -9,7 +9,7 @@
 # qplot
 # ggplot
 
-
+library(ggplot)
 
 # is many layers on top of each other Most basic example, using the build-in
 # data set: mtcars. According to ?mtcars: "The data was extracted from the 1974
@@ -46,9 +46,9 @@ ggplot(data = mtcars) + geom_point( aes(x= mpg, y= wt, color = as.factor(gear) )
 ggplot(data = mtcars, aes(x= mpg, y= wt)) + 
         geom_point(aes( color = as.factor(gear) )) +
         geom_smooth(method = lm) # a linear model Y ~ x smoothing
-# As you add layers, each layer has their elements specified by you 
-# or inherits them from the base element (ggplot()). 
-# In the above example geom_smooth inherits aes(x, y) from 
+# As you add layers, each layer has their elements specified by you
+# or inherits them from the base element (ggplot()).
+# In the above example geom_smooth inherits aes(x, y) from
 #  ggplot(data = mtcars, aes(x= mpg, y= wt)).
 ggplot()+geom_point(data = mtcars, aes(x= mpg, y= wt)) +geom_smooth(method = lm)
 # this doesn't work. The smoothing layer doesn't know wher to find its x and y.
@@ -63,5 +63,39 @@ ggplot()+geom_point(data = mtcars, aes(x= mpg, y= wt)) +
 # 
 # bargraph
 ggplot(data = mtcars, aes(as.factor(cyl))) + geom_bar(stat ="count")
+# identity case
+dat<-data.frame(
+        Name = c("hork", "dork", "bork"),
+        Frequency = c(5, 8,12)
+)
+ggplot(dat, aes(Name, Frequency)) + geom_bar(stat ="identity")
+
+ggplot(chickwts, aes(feed, weight)) + geom_boxplot()
+ggplot(chickwts, aes(feed, weight)) + geom_violin()
+
+ggplot(chickwts, aes(feed, weight)) + geom_point()
+ggplot(chickwts, aes(feed, weight)) + geom_jitter()
+
+ggplot(chickwts, aes(feed, weight)) + geom_boxplot() + geom_jitter()
+ggplot(chickwts, aes(feed, weight)) + geom_boxplot() + geom_point()
+
+ggplot(chickwts, aes(feed, weight)) + geom_violin() + geom_jitter()
+
+ggplot(mtcars, aes(as.factor(cyl), mpg)) +geom_boxplot() +geom_point()
+ggplot(mtcars, aes(as.factor(cyl), mpg)) +geom_violin() +geom_jitter( aes(color = as.factor(am)))
+
+
+g <- ggplot(mtcars, aes(as.factor(cyl), mpg)) +geom_violin() +geom_jitter( aes(color = as.factor(am)))
+g + theme_bw()
+g + theme_dark()
+g + theme_void()
+
+library(ggthemes)
+g + theme_wsj()
+g + theme_tufte()  # very clean theme based on edward tufte 's ideas about graphs
+g + theme_base()
+g + theme_excel()  # you will love this, especially the description
+g + theme_fivethirtyeight()
+
 # Many more examples in cookbook for r. Really good. 
 # IN next lesson we will use the real world data about students in Dutch Universities.

@@ -13,7 +13,7 @@ link<-"https://raw.githubusercontent.com/RMHogervorst/cleancodeexamples/master/f
 # Libraries to use
 library(dplyr) # yes I use it almost daily
 library(ggplot2)
-library(readr)
+library(readr) # for the use of read_csv (there is also a read.csv function in base r)
 # load the data
 duo2015_tidy<- read_csv(link)
 # This is the same file we used in: https://rmhogervorst.github.io/cleancode/blog/2016/02/24/creating-tidy-data.html
@@ -109,4 +109,5 @@ h<-duo2015_tidy %>% filter(OPLEIDINGSNAAM.ACTUEEL %in% hugeprograms$OPLEIDINGSNA
 h%>% #filter(GENDER == "VROUW") %>%
         ggplot(aes(YEAR , FREQUENCY) ) + geom_line(aes(group = OPLEIDINGSNAAM.ACTUEEL)) +
         facet(  GENDER)
+
 # per uni leiden
