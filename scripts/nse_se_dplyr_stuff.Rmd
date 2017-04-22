@@ -1,0 +1,222 @@
+---
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+Create post updated nse with dplyr for version 6.
+
+
+Intro: Link back to old post. And to the suggestions.
+According to [rdocumentation.org](https://www.rdocumentation.org/trends) the dplyr
+package is one of the most downloaded packages in R. 
+
+Dplyr is incredibly useful in interactive use, so useful that I want to use 
+it in all my packages and programming too. However the programming version  of dplyr
+has always been a bit clunky. Not unusable, but not ideal either. 
+ HIER UITLEGGEN WAAROM JE DIT WILT. JE WILT FUNCTIE MAKEN DIE DINGEN GAAT DOEN IN 
+ DE TOEKOMST, MAAR JE WEET NOG NIET WAT DE NAMEN VAN DE VARIABLEN OF DATAFRAME ZIJN.
+ MAAR OMDAT DPLYR DAT WEL WIL WETEN, MOET JE DOOR HOEPELS SPRINGEN
+
+I created a blogpost describing the functions [here]("{{ site.baseurl }}{% link _posts\blog\2016-06-13-NSE_standard_evaluation_dplyr.md %}")
+
+Another option is to use the [wrapr package](https://github.com/WinVector/wrapr). In the
+`wrapr` package is a function `let()` that allows you 
+to program with standard dplyr functions and 'wrap' some glue code around it to 
+make the functions more flexible.
+
+But soon  (May 11th 2017) there will be a dplyr version 0.6.0 a version that eventually will break
+your old code where you were using the functions with a underscore: select_(), 
+filter_(), etc. There is an excellent description of what to do with your code
+and packages in this [compatability guide](http://dplyr.tidyverse.org/articles/compatibility.html#for-users-of-se_-verbs). 
+
+In this update I show what your options were, how to use wrapr,
+and how things work in the future. I intent this post to be a reminder that you can
+check. Therefore the examples I use are silly and trivial but they are here to explain
+the programming part. 
+
+
+# General idea of programming with dplyr
+
+**interactive use of dplyr**
+Dplyr is my main tool to look at data, select sub-parts, check means and all that stuff. 
+Whats great is that it requires less typing and faster prototyping. However, the
+interactive version of the tools used a special way to work with your input (also called Non Standard Evalation or NSE). In the background the package calls C-code to do
+all the manipulations and for normal use it doesn't matter if the data lives on your
+drive, or on a database. The verbs all work the same. It's great!
+
+**old style programming of dplyr**
+In the previous versions of dplyr (0.5.0) there was an interactive verb, for instance 
+`select()` that captured the name of the dataframe and the name of the variables that
+you wanted to use and translated that into standard evaluation. That was fed into
+the special versions of the verbs `select_()`. So that in essence every call to the
+NSE verbs, resulted into a call to the standard verbs. 
+To program with dplyr you had to call the standard verbs, to get around the capturing part. 
+
+**glue code and wrapr**
+The notation and examples of NSE in dplyr were hard to work with and took quite some effort.
+For that reason people have created packages that glue around the edges and do 
+substition for you. One of those is the `wrapr` package and I describe the way you can 
+use it below. 
+
+**New style programming with dplyr**
+It pains me that I have to rewrite some of my code now, but I think Hadley Wickham
+and Romain Francois have done an excellent job to make programming with dplyr easier.
+The wrote a [vignette](http://dplyr.tidyverse.org/articles/programming.html) that 
+describes programming with dplyr very well. So I will only show some examples in the 
+verb-section. I borrow heavily from their vignette and refer everyone to that piece of 
+knowledge.
+
+The new style programming is based on a new way to capture the environment and the
+call, to capture not only the name of the variable but how that variable fits into
+the rest of datastructure. "cyl" does not stand alone, but is part of "mtcars".
+
+> We need to quote the input ourselves (not automatically let dplyr it do) and
+tell the function not to quote the input. 
+
+So they introduced a set of new verbs, with ... interesting names.
+
+`quo()`, `quos()`, `enquo()`, `quo_name()`, `!!` , `!!!`, `UQ()`, `UQE()`
+
+> quo() is equivalent to quote() and enquo() is equivalent to substitute().)
+
+> quo() works like ": it quotes its input rather than evaluating it.
+
+quo() returns a quosure, which is a special type of formula.
+
+> In dplyr (0.6.0)(and in tidyeval in general) you use !! to say that you want to unquote an input so that it’s evaluated, not quoted. 
+
+```
+my_summarise <- function(df, group_by) {
+  quo_group_by <- quo(group_by)  # capture the environment
+  df %>%
+    group_by(!!quo_group_by) %>% # tell dplyr to evaluate here.
+    summarise(a = mean(a))
+}
+```
+> By analogy to strings, we don’t want "", instead we want some function that turns an argument into a string. That’s the job of enquo().
+
+quo_name() to convert the input expression to a string
+
+quos(...) converts to a list of formulas
+
+
+# Specific examples per dplyr verb
+
+## mutate 
+> mutate() adds new variables that are functions of existing variables
+
+**The standard interactive way of using mutate**
+```{r}
+library(dplyr)
+mtcars %>% 
+        mutate(sum_mpg_wt = mpg + wt) %>% 
+        head(3)
+```
+**The 'old'-version of programming with dplyr**
+```
+mtcars %>% mutate_(.dots = setNames(list(~mpg+wt), "sum mpg wt"))# give it a name
+mtcars %>% mutate_(.dots = list(~mpg+wt)) # if you don't need the name specified
+# or
+```
+
+the mutate_ function takes the `.dots` argument that describes what you want to do.
+
+```{r}
+add_columns_and_name_it <- function(col1, col2, new_col_name) {
+    mutate_call <- lazyeval::interp(~ a + b, a = as.name(col1), b = as.name(col2))
+    mtcars %>% mutate_(.dots = setNames(list(mutate_call), new_col_name))
+}
+add_columns_and_name_it("mpg","wt","sum_mpg_wt" ) %>% 
+        names()
+```
+
+*You first create a call that will be evaluated by mutate_ . the call is first interpreted so that the final and correct names are used by mutate_.*
+
+**wrapr way**
+Add the paramters as a list and wrapr's list will substitute the names.
+
+```{r}
+library(wrapr)
+let(
+        alias=list(columnname="sum_mpg_wt",
+               col1= "mpg",
+               col2="wt"),
+        expr={
+      mtcars %>% 
+        mutate(columnname = col1 + col2)
+    }
+    ) %>% names()
+```
+
+**new style dplyr programming**
+
+```
+my_summarise <- function(df, group_by) {
+  group_by <- enquo(group_by)
+  print(group_by)
+
+  df %>%
+    group_by(!!group_by) %>%
+    summarise(a = mean(a))
+}
+```
+
+
+## select
+> select() picks variables based on their names.
+
+Select is used to select columns.
+
+```{r}
+mtcars %>% 
+        select(mpg,cyl) %>% 
+        head(3)
+```
+**old style dplyr programming**
+```{r}
+mtcars %>% 
+        select_(~mpg, ~cyl) %>% 
+        head(3)
+```
+
+**wrapr way**
+```{r}
+let(alias = list(col1 = "mpg", col2 = "cyl"),
+    expr = {
+            mtcars %>% 
+                    select(col1,col2)
+    }
+)
+```
+    
+    
+## filter    
+> filter() picks cases based on their values.
+
+
+
+## summarise, summarize
+> summarise() reduces multiple values down to a single summary.
+
+
+## arrange
+> arrange() changes the ordering of the rows.
+
+## group_by
+> apply a grouping with group_by()
+
+
+Conclusions: new style programming is probably better, still quite difficult.
+
+
+# Links
+
+- [dplyr 0.6 post - rstudio](https://blog.rstudio.org/2017/04/13/dplyr-0-6-0-coming-soon/)
+- [Programming with dplyr - vignette](http://dplyr.tidyverse.org/articles/programming.html)
+- [backward compatability help for your old dplyr code](http://dplyr.tidyverse.org/articles/compatibility.html)
