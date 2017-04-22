@@ -1,0 +1,86 @@
+---
+title: "Plot a day day 1"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+I found this wonderful picture 
+
+INSERT PICTURE HERE
+
+It shows some best practices for displaying information. Now you don't 
+have to agree with these practices, but it is rather fun to try to recreate
+these plots. I will use the R packages: dplyr, tidyr, ggplot and possibly magrittr. The easiest way to install these packages is with the tidyverse installer:
+
+```
+install.packages("tidyverse")
+```
+
+http://www.cookbook-r.com/Graphs/ will tell you all about making graphs and changing them
+
+## Relations between two variables
+
+We start with a relative simple (in complexity) plot^[I never want to say things are simple, that is extremely frustrating for newcomers, if I do, please correct me!]. Visualizing 
+the relation between two variables. 
+We start with the build in dataset `airquality`.
+A bit of exploring: 
+*notice that we don't have to load the dataset.*
+*The dataset is actually available and loaded when necessary*
+
+```{r}
+head(airquality)   # top 6 rows of the dataset 
+str(airquality)    # structure
+?airquality        # the helppage of this dataset
+```
+
+Then we start with plotting.
+I will give the name of the argument en then the variable.
+So for instance `ggplot(data = airquality)` note that is not necesarry:
+There is a fixed order, see `?ggplot`.
+Under **Usage** it says `ggplot(data = NULL, mapping = aes(), ..., environment = parent.frame())`
+If you give the arguments in  
+the order: data and then mapping, R will assume that you meant it in that order. 
+So `ggplot(airquality)` is assumed to mean `ggplot(data = airquality)`. 
+Likewise in the `mapping = aes()` part, it says: `aes(x, y, ...)`. 
+So I could say aes(OZone, Temp) where Ozone would take the place of x and Temp y. 
+
+```{r plotting two variables}
+library(ggplot2) # load ggplot to start plotting
+ggplot(data = airquality)+  # first a layer of ggplot
+        geom_point(aes(x =Ozone, y= Temp)) # then a layer of points
+```
+
+We plot the two variables against each other. 
+
+## Extending the scatterplot to include more then 2 variables.
+
+What if you would like to visualize more variables?
+
+```{r plotting more then 2 variables}
+ggplot(data = airquality)+  # first a layer of ggplot
+        geom_point(aes(x =Ozone, y= Temp, color =  Solar.R)) # then a layer of points
+```
+
+To add more variables we can also change
+
+- transparancy: alpha
+- color = colour/color
+- size 
+- shape
+
+```{r adding size}
+ggplot(data = airquality)+  # first a layer of ggplot
+        geom_point(aes(x =Ozone, y= Temp, color =  Solar.R, size = Month)) # then a layer 
+```
+
+not really helpfull. 
+
+```{r adding size}
+ggplot(data = airquality)+  # first a layer of ggplot
+        geom_point(aes(x =Ozone, y= Temp, color =  Solar.R, shape = as.factor(Month))) # then a layer 
+```
+

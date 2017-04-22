@@ -11,7 +11,7 @@
 #  https://github.com/RMHogervorst/cleancodeexamples/blob/master/scripts/opening-spss-file-manipulate-with-dplyr-2016-feb.R
 #  
 # necesary packages:  ####
-install.packages("tidyr")
+#install.packages("tidyr")
 library(readr)
 library(tidyr)
 library(dplyr)

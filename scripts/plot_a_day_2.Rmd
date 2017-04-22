@@ -1,0 +1,74 @@
+---
+title: "plot a day 2"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+I found this wonderful picture 
+
+INSERT PICTURE HERE
+
+It shows some best practices for displaying information. Now you don't 
+have to agree with these practices, but it is rather fun to try to recreate
+these plots. I will use the R packages: dplyr, tidyr, ggplot and possibly magrittr. The easiest way to install these packages is with the tidyverse installer:
+
+```
+install.packages("tidyverse")
+```
+
+http://www.cookbook-r.com/Graphs/ will tell you all about making graphs and changing them
+
+## bar graphs
+
+we will be working with the airquality dataset
+
+
+```{r}
+head(airquality)   # top 6 rows of the dataset 
+str(airquality)    # structure
+?airquality        # the helppage of this dataset
+```
+
+```{r}
+library(ggplot2)
+ggplot(data = airquality)+ # start a plot layer
+        geom_bar(aes(x = Day, y = Ozone),stat = "identity") # bar layer, by day. Y axis Ozone.
+```
+
+Normally geom_bar count the number of values in each group. However, I would like to see the Ozone levels on each day. 
+
+Is this really true? more then 300 on day one?
+
+```{r}
+airquality %>% 
+        filter(Day == 1)
+```
+
+Ah there is a measurement every month. So we actually need to plot every month seperate. 
+There is a way to create small multiples of a plot. In ggplot this is called faceting. 
+
+```{r}
+library(ggplot2)
+ggplot(data = airquality)+
+        geom_bar(aes(x = Day, y = Ozone),stat = "identity")+
+        facet_wrap(facets = ~Month)  # create facets per month. 
+```
+
+Now the values are grouped per month. 
+
+
+
+* mogelijk per dag van de week, aangeven dat het volgens instructies
+van may tot september 1973 is.
+
+* mutate dag en maand plus jaar in nieuwe kolom iso notatie 1973-month-day 
+dan weekdays loslaten op datum. of weekend doordeweeks verschillen. 
+
+* opslaan als nieuwe dataframe
+
+* verder werken met nieuwe day of week variabele
+* ozone, solar.

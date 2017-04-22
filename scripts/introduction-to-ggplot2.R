@@ -43,7 +43,7 @@ ggplot(data = mtcars) + geom_point( aes(x= mpg, y= wt, color = as.factor(gear) )
 # Factor variables are distinct and the colors are as distinct as possible too.
 # Look back at the plot you created, there seems to be a relation between weight 
 # and miles per gallon. Let's plot a smooth line on top of that.
-ggplot(data = mtcars, aes(x= mpg, y= wt)) + 
+ggplot(data = mtcars, aes(x= mpg, y= wt, group = as.factor(gear))) + 
         geom_point(aes( color = as.factor(gear) )) +
         geom_smooth(method = lm) # a linear model Y ~ x smoothing
 # As you add layers, each layer has their elements specified by you
